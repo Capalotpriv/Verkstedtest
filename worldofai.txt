@@ -1,0 +1,109 @@
+"use client"
+
+import React, { useState } from "react"
+import AudioUploader from "./ui/AudioUploader"
+import TextInput from "./ui/TextInput"
+import RegistrationForm from "./ui/RegistrationForm"
+import TestimonialSection from "./ui/TestimonialSection"
+import CallToAction from "./ui/CallToAction"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./components/Card"
+import { Button } from "./components/Button"
+import { AlertCircle, CheckCircle } from "lucide-react"
+
+export default function VerkstedAI() {
+  const [audioFile, setAudioFile] = useState<File | null>(null)
+  const [audioDuration, setAudioDuration] = useState<number | null>(null)
+  const [text, setText] = useState<string>("")
+  const [isProcessing, setIsProcessing] = useState<boolean>(false)
+  const [result, setResult] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [hasCreatedSample, setHasCreatedSample] = useState<boolean>(false)
+  const [registrationSuccess, setRegistrationSuccess] = useState<boolean>(false)
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (hasCreatedSample) {
+      setError("You've already created one sample. Please create an account to continue.")
+      return
+    }
+
+    if (!audioFile || !text) {
+      setError("Please upload an audio file and enter some text.")
+      return
+    }
+
+    if (audioDuration && audioDuration < 45) {
+      setError("Audio sample must be at least 45 seconds long.")
+      return
+    }
+
+    setError(null)
+    setIsProcessing(true)
+    // Simulate AI processing
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+    setResult(`Your text "${text}" has been processed with the uploaded voice.`)
+    setIsProcessing(false)
+    setHasCreatedSample(true)
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center">VerkstedAI</CardTitle>
+          <p className="text-center text-gray-600 mt-2">AI-powered voice cloning for personalized audio content</p>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <AudioUploader
+              setAudioFile={setAudioFile}
+              setAudioDuration={setAudioDuration}
+              setError={setError}
+              audioFile={audioFile}
+              audioDuration={audioDuration}
+            />
+            <TextInput text={text} setText={setText} />
+            {error && (
+              <div className="flex items-center space-x-2 text-red-500">
+                <AlertCircle size={16} />
+                <span>{error}</span>
+              </div>
+            )}
+            <Button type="submit" disabled={isProcessing} className="w-full">
+              {isProcessing ? "Processing..." : "Generate VerkstedAI Voice"}
+            </Button>
+          </form>
+        </CardContent>
+        {result && (
+          <CardFooter>
+            <div className="w-full p-4 bg-gray-100 rounded">
+              <h3 className="text-lg font-semibold mb-2">Result:</h3>
+              <p>{result}</p>
+              <div className="mt-4 p-2 bg-gray-200 rounded text-center">
+                [VerkstedAI-generated audio would play here]
+              </div>
+            </div>
+          </CardFooter>
+        )}
+      </Card>
+
+      <RegistrationForm
+        setRegistrationSuccess={setRegistrationSuccess}
+        setHasCreatedSample={setHasCreatedSample}
+      />
+
+      {registrationSuccess && (
+        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-8" role="alert">
+          <div className="flex items-center">
+            <CheckCircle className="mr-2" />
+            <p>Account created successfully! You can now create unlimited VerkstedAI voice samples.</p>
+          </div>
+        </div>
+      )}
+
+      <CallToAction />
+
+      <TestimonialSection />
+    </div>
+  )
+}
